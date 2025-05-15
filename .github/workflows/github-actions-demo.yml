@@ -1,1 +1,20 @@
+name: Playwright/Cypress Tests
 
+on:
+  push:
+    branches: [ $default-branch ]
+  pull_request:
+    branches: [ $default-branch ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+    - name: Build
+      run: |
+        echo "TODO placeholder"
