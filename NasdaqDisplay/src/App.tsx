@@ -5,10 +5,18 @@ import './App.css'
 import './relay.tsx'
 import { retrieveCompanyName, retrieveLastestPrice } from './relay.tsx'
  
-function StockCard(ticker: string) {
-  const price = retrieveLastestPrice(ticker)
+async function StockCard(ticker: string) {
+  const price = await retrieveLastestPrice(ticker)
   const fullName = retrieveCompanyName(ticker)
-  
+  return (
+    <>
+      <tr>
+        <td>{ticker}</td>
+        <td>{price.recent_price}</td>
+        <td>{fullName}</td>
+      </tr>
+    </>
+  )
 }
 
 function App() {
