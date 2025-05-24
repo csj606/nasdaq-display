@@ -12,9 +12,10 @@ export const nasdaqStockTickers: string[] = ["MSFT", "AAPL", "NVDA", "AMZN", "AV
     "CSGP", "ANSS", "CDW", "WBD", "GFS", "ON", "BIIB", "ARM", "MDB"
 ];
 
-type Stock =  {
+export type Stock =  {
     symbol: string;
     recent_price: number;
+    company_description: string;
 };
 
 function verifyTicker(ticker: string): boolean{
@@ -25,25 +26,23 @@ function verifyTicker(ticker: string): boolean{
     }
 }
 
-export async function retrieveLastestPrice(ticker: string): Promise<Stock>{
-    if(!verifyTicker(ticker)){
-        return {symbol: "Invalid Stock Symbol", recent_price: -1}
-    }
-    const data = await polyon.stocks.lastQuote(ticker);
+export async function retrieveLastestPrice(ticker: string): Promise<number>{
+    const data = await polyon.stocks.previousClose(ticker);
     try{
         if(data.results !== null){
-            let priceAPI = data.results?.P!
-            let price : number = priceAPI
-            return {symbol: ticker, recent_price: price}
+            let resultCount = data.resultsCount!
+            let closePrice = 0
+            let priceAPI = data.results?.map(result => (
+                closePrice += result.c!
+            ))
+            let price : number = closePrice/resultCount
+            return price
         }else{
-            return {symbol: "Error with API", recent_price: -1}
+            return -1
         }
     }catch(exception: any){
         console.log(exception)
-        return {
-            symbol: "Error on data retrieval",
-            recent_price: -1
-        }
+        return -1
     }
 }
 
