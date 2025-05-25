@@ -12,6 +12,23 @@ export const nasdaqStockTickers: string[] = ["MSFT", "AAPL", "NVDA", "AMZN", "AV
     "CSGP", "ANSS", "CDW", "WBD", "GFS", "ON", "BIIB", "ARM", "MDB"
 ];
 
+export async function getStocks(): Promise<Stock[]>{
+  let results: Stock[] = []
+  for(let i = 0; i < nasdaqStockTickers.length; i++){
+    const ticker: string = nasdaqStockTickers[i]
+    const companyName: string = retrieveCompanyName(ticker)
+    if (i !== 0 && i % 4 === 0){
+      await new Promise(resolve => setTimeout(resolve, 2000))
+    }
+    console.log("Cycle " + i.toString())
+    console.log(Date.now())
+    const price: number = await retrieveLastestPrice(ticker)
+    const newStock: Stock = {symbol: ticker, recent_price: price, company_description: companyName}
+    results.push(newStock)
+  }
+  return results
+}
+
 export type Stock =  {
     symbol: string;
     recent_price: number;
@@ -26,16 +43,16 @@ function verifyTicker(ticker: string): boolean{
     }
 }
 
-export async function retrieveLastestPrice(ticker: string): Promise<number>{
+async function retrieveLastestPrice(ticker: string): Promise<number>{
     const data = await polyon.stocks.previousClose(ticker);
     try{
         if(data.results !== null){
             let resultCount = data.resultsCount!
             let closePrice = 0
-            let priceAPI = data.results?.map(result => (
+            data.results?.map(result => (
                 closePrice += result.c!
             ))
-            let price : number = closePrice/resultCount
+            let price: number = closePrice/resultCount
             return price
         }else{
             return -1
@@ -46,7 +63,7 @@ export async function retrieveLastestPrice(ticker: string): Promise<number>{
     }
 }
 
-export function retrieveCompanyName(ticker: string): string{
+function retrieveCompanyName(ticker: string): string{
     if(!verifyTicker(ticker)){
         return "Invaid ticker"
     }
