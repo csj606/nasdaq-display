@@ -1,5 +1,10 @@
-import {restClient} from '@polygon.io/client-js';
-const polyon = restClient("");
+import * as finnhub from 'finnhub';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const api_key = finnhub.ApiClient.instance.authentications['api_key']
+api_key.api_key = import.meta.env.VITE_FINNHUB_API_KEY;
+const finnhubClient = new finnhub.DefaultApi()
 
 export const nasdaqStockTickers: string[] = ["MSFT", "AAPL", "NVDA", "AMZN", "AVGO", "META", "NFLX",
     "TSLA", "COST", "GOOG", "TMUS", "PLTR", "CSCO", "LIN", "ISRG", "INTU", "PEP", "AMD", "ADBE", 
@@ -17,8 +22,8 @@ export async function getStocks(): Promise<Stock[]>{
   for(let i = 0; i < nasdaqStockTickers.length; i++){
     const ticker: string = nasdaqStockTickers[i]
     const companyName: string = retrieveCompanyName(ticker)
-    if (i !== 0 && i % 4 === 0){
-      await new Promise(resolve => setTimeout(resolve, 2000))
+    if (i !== 0 && i % 49 === 0){
+      await new Promise(resolve => setTimeout(resolve, 20000))
     }
     console.log("Cycle " + i.toString())
     console.log(Date.now())
@@ -35,6 +40,11 @@ export type Stock =  {
     company_description: string;
 };
 
+type FinnhubResponse = {
+    c: number,
+    o: number
+}
+
 function verifyTicker(ticker: string): boolean{
     if(ticker in nasdaqStockTickers){
         return true
@@ -44,23 +54,16 @@ function verifyTicker(ticker: string): boolean{
 }
 
 async function retrieveLastestPrice(ticker: string): Promise<number>{
-    const data = await polyon.stocks.previousClose(ticker);
-    try{
-        if(data.results !== null){
-            let resultCount = data.resultsCount!
-            let closePrice = 0
-            data.results?.map(result => (
-                closePrice += result.c!
-            ))
-            let price: number = closePrice/resultCount
-            return price
-        }else{
-            return -1
+    let result: number = -1
+    await finnhubClient.quote(ticker, (error: Error, data: FinnhubResponse, response: unknown) => {
+        if (data !== null) {
+            result = data.c
+        } else {
+            console.error(error);
+            console.log(response);
         }
-    }catch(exception: any){
-        console.log(exception)
-        return -1
-    }
+    });
+    return result
 }
 
 function retrieveCompanyName(ticker: string): string{
