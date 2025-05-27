@@ -2,9 +2,6 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import './relay.tsx'
 import { getStocks, type Stock } from './relay.tsx'
-
-import dotenv from 'dotenv';
-dotenv.config();
  
 function stockCard({stock}: {stock: Stock}) {
   return (

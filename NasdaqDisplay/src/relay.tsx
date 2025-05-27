@@ -1,11 +1,3 @@
-import * as finnhub from 'finnhub';
-import dotenv from 'dotenv';
-dotenv.config();
-
-const api_key = finnhub.ApiClient.instance.authentications['api_key']
-api_key.api_key = import.meta.env.VITE_FINNHUB_API_KEY;
-const finnhubClient = new finnhub.DefaultApi()
-
 export const nasdaqStockTickers: string[] = ["MSFT", "AAPL", "NVDA", "AMZN", "AVGO", "META", "NFLX",
     "TSLA", "COST", "GOOG", "TMUS", "PLTR", "CSCO", "LIN", "ISRG", "INTU", "PEP", "AMD", "ADBE", 
     "TXN", "BKNG", "QCOM", "AMGN", "HON", "AMAT", "CMCSA", "GILD", "PANW", "MELI", "ADP", 
@@ -17,17 +9,31 @@ export const nasdaqStockTickers: string[] = ["MSFT", "AAPL", "NVDA", "AMZN", "AV
     "CSGP", "ANSS", "CDW", "WBD", "GFS", "ON", "BIIB", "ARM", "MDB"
 ];
 
+type jsonResponse = {
+    price: number
+}
+
 export async function getStocks(): Promise<Stock[]>{
   let results: Stock[] = []
+  let startTime: number = Date.now()
   for(let i = 0; i < nasdaqStockTickers.length; i++){
     const ticker: string = nasdaqStockTickers[i]
     const companyName: string = retrieveCompanyName(ticker)
-    if (i !== 0 && i % 49 === 0){
-      await new Promise(resolve => setTimeout(resolve, 20000))
+    if (i === 49){
+        let interval: number = Date.now() - startTime
+        const remainingMinute: number = 60000 - interval 
+        await new Promise(resolve => setTimeout(resolve, remainingMinute))
     }
     console.log("Cycle " + i.toString())
-    console.log(Date.now())
-    const price: number = await retrieveLastestPrice(ticker)
+
+    const port = 4266
+    let price: number = -1
+    await fetch(`http://127.0.0.1:${port}/quote?ticker=${ticker}`)
+    .then(response => response.text())
+    .then(data => {
+        const json: jsonResponse  = JSON.parse(data)
+        price = json.price
+    })
     const newStock: Stock = {symbol: ticker, recent_price: price, company_description: companyName}
     results.push(newStock)
   }
@@ -40,10 +46,6 @@ export type Stock =  {
     company_description: string;
 };
 
-type FinnhubResponse = {
-    c: number,
-    o: number
-}
 
 function verifyTicker(ticker: string): boolean{
     if(ticker in nasdaqStockTickers){
@@ -53,18 +55,6 @@ function verifyTicker(ticker: string): boolean{
     }
 }
 
-async function retrieveLastestPrice(ticker: string): Promise<number>{
-    let result: number = -1
-    await finnhubClient.quote(ticker, (error: Error, data: FinnhubResponse, response: unknown) => {
-        if (data !== null) {
-            result = data.c
-        } else {
-            console.error(error);
-            console.log(response);
-        }
-    });
-    return result
-}
 
 function retrieveCompanyName(ticker: string): string{
     if(!verifyTicker(ticker)){
