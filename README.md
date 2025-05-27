@@ -1,5 +1,7 @@
 # NASDAQ Display
 
+# Note - Project ongoing
+
 ## Overview
 
 This application is a simple web display showing the most recent prices for the NASDAQ 100 index. Most financial websites have good visualizations showcasing the prices for the S&P 500. However, while there is some overlap, the NASDAQ 100 has some individual companies which are not included in the S&P 500. This a 
