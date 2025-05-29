@@ -1,7 +1,6 @@
 import express from 'express'
 import dotenv from 'dotenv'
 import cors from 'cors'
-import { promisify } from "util";
 const finnhub = require('finnhub');
 
 dotenv.config()
@@ -9,27 +8,31 @@ const app = express()
 const port = process.env.PORT || 9090
 app.use(cors())
 
-const api_key = finnhub.ApiClient.instance.authentications['api_key']
-api_key.api_key = process.env.FINNHUB_API_KEY;
-console.log(api_key)
-const finnhubClient = new finnhub.DefaultApi()
-
-const stockQuote = promisify(finnhubClient.quote.bind(finnhubClient))
 
 type FinnhubResponse = {
     c: number,
     o: number
 }
 
-type websiteRequest = {
-    ticker: string
-}
+const getQuote = (symbol: string): Promise<FinnhubResponse> => {
+    const api_key = finnhub.ApiClient.instance.authentications['api_key']
+    api_key.apiKey = process.env.FINNHUB_API_KEY;
+    const finnhubClient = new finnhub.DefaultApi()
+    return new Promise((resolve, reject) => {
+        finnhubClient.quote(symbol, (error: any, data: FinnhubResponse, response: any) => {
+            if (error){
+                return reject(error);
+            } 
+            resolve(data);
+        });
+    });
+};
 
 app.get("/quote", async (req, res) => {
     let result : number = -1
     console.log(req.query)
     let ticker: string = req.query.ticker as string
-    let data = await stockQuote(ticker)
+    let data = await getQuote(ticker)
     if(data !== null){
         result = data.c
     }

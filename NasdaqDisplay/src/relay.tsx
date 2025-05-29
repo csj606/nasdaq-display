@@ -9,10 +9,6 @@ export const nasdaqStockTickers: string[] = ["MSFT", "AAPL", "NVDA", "AMZN", "AV
     "CSGP", "ANSS", "CDW", "WBD", "GFS", "ON", "BIIB", "ARM", "MDB"
 ];
 
-type jsonResponse = {
-    price: number
-}
-
 export async function getStocks(): Promise<Stock[]>{
   let results: Stock[] = []
   let startTime: number = Date.now()
@@ -21,6 +17,7 @@ export async function getStocks(): Promise<Stock[]>{
     const companyName: string = retrieveCompanyName(ticker)
     if (i === 49){
         let interval: number = Date.now() - startTime
+        console.log(interval)
         const remainingMinute: number = 60000 - interval 
         await new Promise(resolve => setTimeout(resolve, remainingMinute))
     }
@@ -30,10 +27,11 @@ export async function getStocks(): Promise<Stock[]>{
     let price: number = -1
     await fetch(`http://127.0.0.1:${port}/quote?ticker=${ticker}`)
     .then(response => response.text())
-    .then(data => {
-        const json: jsonResponse  = JSON.parse(data)
-        price = json.price
+    .then(text => {
+        console.log(text)
+        price = parseFloat(text)
     })
+    console.log(price)
     const newStock: Stock = {symbol: ticker, recent_price: price, company_description: companyName}
     results.push(newStock)
   }
@@ -47,19 +45,17 @@ export type Stock =  {
 };
 
 
-function verifyTicker(ticker: string): boolean{
-    if(ticker in nasdaqStockTickers){
-        return true
-    }else{
-        return false
-    }
-}
+// function verifyTicker(ticker: string): boolean{
+//     if(ticker in nasdaqStockTickers){
+//         return true
+//     }else{
+//         return false
+//     }
+// }
 
 
 function retrieveCompanyName(ticker: string): string{
-    if(!verifyTicker(ticker)){
-        return "Invaid ticker"
-    }
+    console.log(ticker)
     switch(ticker){
         case "MSFT":
             return "Microsoft"
