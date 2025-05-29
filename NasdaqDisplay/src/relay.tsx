@@ -15,23 +15,18 @@ export async function getStocks(): Promise<Stock[]>{
   for(let i = 0; i < nasdaqStockTickers.length; i++){
     const ticker: string = nasdaqStockTickers[i]
     const companyName: string = retrieveCompanyName(ticker)
-    if (i === 49){
+    if (i === 59){
         let interval: number = Date.now() - startTime
-        console.log(interval)
         const remainingMinute: number = 60000 - interval 
         await new Promise(resolve => setTimeout(resolve, remainingMinute))
     }
-    console.log("Cycle " + i.toString())
-
     const port = 4266
     let price: number = -1
     await fetch(`http://127.0.0.1:${port}/quote?ticker=${ticker}`)
     .then(response => response.text())
     .then(text => {
-        console.log(text)
         price = parseFloat(text)
     })
-    console.log(price)
     const newStock: Stock = {symbol: ticker, recent_price: price, company_description: companyName}
     results.push(newStock)
   }
@@ -55,7 +50,6 @@ export type Stock =  {
 
 
 function retrieveCompanyName(ticker: string): string{
-    console.log(ticker)
     switch(ticker){
         case "MSFT":
             return "Microsoft"

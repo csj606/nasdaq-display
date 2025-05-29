@@ -40,7 +40,6 @@ function App() {
       const retrievedStocks = await getStocks()
       setStocks(retrievedStocks)
     }
-    console.log("This rendered")
     dataTasks()
   }, [])
   return (
