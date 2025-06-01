@@ -1,5 +1,7 @@
 # NASDAQ Display
 
+[![Playwright Tests](https://github.com/csj606/nasdaq-display/actions/workflows/github-actions-demo.yml/badge.svg)](https://github.com/csj606/nasdaq-display/actions/workflows/github-actions-demo.yml)
+
 # Note - Project ongoing
 
 ## Overview
