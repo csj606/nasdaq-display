@@ -10,14 +10,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
-      with: 
-        node-version: ${{ matrix.node-version }}
     - name: Set up proxy server packages
       working-directory: ./Server
       run: npm ci
