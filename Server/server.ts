@@ -5,7 +5,10 @@ const finnhub = require('finnhub');
 
 dotenv.config()
 const app = express()
-const port = process.env.PORT || 9090
+let port: number = 9090
+if(typeof process.env.PORT !== 'undefined' && typeof process.env.PORT !== 'string'){
+    port = process.env.PORT
+}
 app.use(cors())
 
 
@@ -76,10 +79,7 @@ app.get("/quotes", async (req, res) => {
     }
 })
 
-app.listen(port, () => {
-    if(typeof process.env.FINNHUB_API_KEY !== 'undefined'){
-        console.log(process.env.FINNHUB_API_KEY.length)
-    }
+app.listen(port, '0.0.0.0', () => {
     retrievePrices()
     setInterval(retrievePrices, 600000)
     console.log("Proxy server online")
