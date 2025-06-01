@@ -12,6 +12,10 @@ const nasdaqStockTickers: string[] = ["MSFT", "AAPL", "NVDA", "AMZN", "AVGO", "M
 export async function getStocks(): Promise<Stock[]>{
   let results: Stock[] = []
   const port = 4266
+  let check = await fetch(`http://127.0.0.1:${port}/quotes`)
+  if(!check.ok){
+    throw new Error(`Status code: ${check.status}`)
+  }
   await fetch(`http://127.0.0.1:${port}/quotes`)
     .then(response => response.json())
     .then(data => {
