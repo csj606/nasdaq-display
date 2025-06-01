@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: Testing Environment
     timeout-minutes: 60
     steps:
     - uses: actions/checkout@v4
@@ -22,9 +23,9 @@ jobs:
     - name: Create .env file for proxy server
       working-directory: ./Server
       run: |
-        echo "FINNHUB_API_KEY=${{ secrets.API_KEY }}" >> .env
+        echo "FINNHUB_API_KEY=${{ secrets.API_KEY }}"
         echo "" >> .env
-        echo "PORT=${{secrets.PORT}}" >> .env
+        echo "PORT=${{ secrets.PORT }}" >> .env
     - name: Starts proxy server
       working-directory: ./Server
       run: npm run start &
