@@ -5,7 +5,7 @@ const finnhub = require('finnhub');
 
 dotenv.config()
 const app = express()
-let port: number = 9090
+let port: number = 4266
 if(typeof process.env.PORT !== 'undefined' && typeof process.env.PORT !== 'string'){
     port = process.env.PORT
 }
