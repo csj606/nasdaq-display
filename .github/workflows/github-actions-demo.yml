@@ -14,6 +14,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
+    - name: Finnhub API check
+      run: |
+        curl -i "https://finnhub.io/api/v1/quote?symbol=AAPL&token=${{ secrets.API_KEY }}"
     - name: Set up proxy server packages
       working-directory: ./Server
       run: npm ci

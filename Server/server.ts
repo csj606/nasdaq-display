@@ -77,6 +77,9 @@ app.get("/quotes", async (req, res) => {
 })
 
 app.listen(port, () => {
+    if(typeof process.env.FINNHUB_API_KEY !== 'undefined'){
+        console.log(process.env.FINNHUB_API_KEY.length)
+    }
     retrievePrices()
     setInterval(retrievePrices, 600000)
     console.log("Proxy server online")
