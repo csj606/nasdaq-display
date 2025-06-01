@@ -1,4 +1,4 @@
-export const nasdaqStockTickers: string[] = ["MSFT", "AAPL", "NVDA", "AMZN", "AVGO", "META", "NFLX",
+const nasdaqStockTickers: string[] = ["MSFT", "AAPL", "NVDA", "AMZN", "AVGO", "META", "NFLX",
     "TSLA", "COST", "GOOG", "TMUS", "PLTR", "CSCO", "LIN", "ISRG", "INTU", "PEP", "AMD", "ADBE", 
     "TXN", "BKNG", "QCOM", "AMGN", "HON", "AMAT", "CMCSA", "GILD", "PANW", "MELI", "ADP", 
     "VRTX", "ADI", "APP", "LRCX", "MU", "KLAC", "CRWD", "SBUX", "MSTR", "INTC", "CEG", "CTAS",
@@ -11,25 +11,20 @@ export const nasdaqStockTickers: string[] = ["MSFT", "AAPL", "NVDA", "AMZN", "AV
 
 export async function getStocks(): Promise<Stock[]>{
   let results: Stock[] = []
-  let startTime: number = Date.now()
-  for(let i = 0; i < nasdaqStockTickers.length; i++){
-    const ticker: string = nasdaqStockTickers[i]
-    const companyName: string = retrieveCompanyName(ticker)
-    if (i === 59){
-        let interval: number = Date.now() - startTime
-        const remainingMinute: number = 60000 - interval 
-        await new Promise(resolve => setTimeout(resolve, remainingMinute))
-    }
-    const port = 4266
-    let price: number = -1
-    await fetch(`http://127.0.0.1:${port}/quote?ticker=${ticker}`)
-    .then(response => response.text())
-    .then(text => {
-        price = parseFloat(text)
+  const port = 4266
+  await fetch(`http://127.0.0.1:${port}/quotes`)
+    .then(response => response.json())
+    .then(data => {
+        console.log(data)
+        for(let i = 0; i < nasdaqStockTickers.length; i++){
+            const ticker: string = nasdaqStockTickers[i]
+            const companyName: string = retrieveCompanyName(ticker)
+            const price: number = data[ticker]
+            console.log(price)
+            const newStock: Stock = {symbol: ticker, recent_price: price, company_description: companyName}
+            results.push(newStock)
+        }
     })
-    const newStock: Stock = {symbol: ticker, recent_price: price, company_description: companyName}
-    results.push(newStock)
-  }
   return results
 }
 
@@ -38,15 +33,6 @@ export type Stock =  {
     recent_price: number;
     company_description: string;
 };
-
-
-// function verifyTicker(ticker: string): boolean{
-//     if(ticker in nasdaqStockTickers){
-//         return true
-//     }else{
-//         return false
-//     }
-// }
 
 
 function retrieveCompanyName(ticker: string): string{

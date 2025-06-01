@@ -1,18 +1,17 @@
 import { test, expect } from '@playwright/test';
 
-test('has title', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
-
-  // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Playwright/);
+test('tab name correct', async ({ page }) => {
+  await page.goto('http://localhost:4173');
+  await expect(page).toHaveTitle(/NASDAQ Stock Display/);
 });
 
-test('get started link', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
+test('page heading correct', async ({page}) => {
+  await page.goto('http://localhost:4173');
+  await expect(page.locator('h1')).toHaveText("NASDAQ 100 Daily Prices")
+})
 
-  // Click the get started link.
-  await page.getByRole('link', { name: 'Get started' }).click();
-
-  // Expects page to have a heading with the name of Installation.
-  await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
-});
+test('correct number of columns + rows', async ({page}) => {
+  await page.goto("http://localhost:4173")
+  await expect(page.locator('th')).toHaveCount(3)
+  await expect(page.locator('tr')).toHaveCount(101)
+})
