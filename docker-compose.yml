@@ -1,0 +1,13 @@
+services:
+  web:
+    build: ./NasdaqDisplay
+    ports:
+      - "4173:4173"
+    depends_on:
+      - server
+    restart: unless-stopped
+  server:
+    build: ./Server
+    ports:
+      - "4266:4266"
+    restart: unless-stopped

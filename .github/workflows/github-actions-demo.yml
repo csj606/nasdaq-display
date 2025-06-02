@@ -1,5 +1,4 @@
 name: Playwright Tests
-
 on:
   push:
     branches: [ main ]
@@ -14,31 +13,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
-    - name: Set up proxy server packages
-      working-directory: ./Server
-      run: npm ci
-    - name: Builds proxy server
-      working-directory: ./Server
-      run: npm run build
     - name: Create .env file for proxy server
       working-directory: ./Server
       run: |
         echo "FINNHUB_API_KEY=${{ secrets.API_KEY }}" >> .env
         echo "PORT=${{ secrets.PORT }}" >> .env
-    - name: Starts proxy server
-      working-directory: ./Server
-      run: npm run start > proxy.log 2>&1 &
+    - name: Starts stack
+      run: docker-compose up -d --build
     - name: Waits for proxy server to retrieve info
       run: sleep 70
-    - name: Set up web display
-      working-directory: ./NasdaqDisplay
-      run: npm ci
-    - name: Build web display
-      working-directory: ./NasdaqDisplay
-      run: npm run build
-    - name: Start web display
-      working-directory: ./NasdaqDisplay
-      run: npm run preview &
     - name: Install Playwright dependencies
       working-directory: ./WebAppTests
       run: npm ci
