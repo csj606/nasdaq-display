@@ -19,7 +19,7 @@ jobs:
         echo "FINNHUB_API_KEY=${{ secrets.API_KEY }}" >> .env
         echo "PORT=${{ secrets.PORT }}" >> .env
     - name: Starts stack
-      run: docker-compose up -d --build
+      run: docker compose up -d --build
     - name: Waits for proxy server to retrieve info
       run: sleep 70
     - name: Install Playwright dependencies
