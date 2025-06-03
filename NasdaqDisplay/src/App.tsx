@@ -2,16 +2,18 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import './relay.tsx'
 import { getStocks, type Stock } from './relay.tsx'
+import { Link } from 'react-router-dom';
  
 function stockCard({stock}: {stock: Stock}) {
+  const path = `/stock/${stock.symbol}`
   return (
     <tr>
-      <td>{stock.symbol}</td>
-      <td>{stock.recent_price}</td>
+      <td><Link to={path} >{stock.symbol}</Link></td>
+      <td>{`$${stock.recent_price}`}</td>
       <td>{stock.company_description}</td>
     </tr>
   )
-} 
+}
 
 function stockTable({stocks}: {stocks: Stock[]}) {
   return (

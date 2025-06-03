@@ -45,6 +45,20 @@ const getQuote = (symbol: string): Promise<FinnhubResponse> => {
     });
 };
 
+const getFundamentals = (symbol: string): Promise<any> => {
+    const api_key = finnhub.ApiClient.instance.authentications['api_key']
+    api_key.apiKey = process.env.FINNHUB_API_KEY;
+    const finnhubClient = new finnhub.DefaultApi()
+    return new Promise((resolve, reject) => {
+        finnhubClient.companyBasicFinancials(symbol, "all", (error: any, data: any, response: any) => {
+            if(error){
+                return reject(error)
+            }
+            resolve(data["metric"])
+        })
+    })
+}
+
 async function retrievePrices(){
     pricesUpdating = true
     let startTime: number = Date.now()
@@ -63,9 +77,7 @@ async function retrievePrices(){
         }
         priceJSON[ticker] = result
     }
-    console.log(priceJSON)
     pricesUpdating = false
-    
 }
 
 
@@ -77,6 +89,19 @@ app.get("/quotes", async (req, res) => {
         await new Promise(resolve => setTimeout(resolve, 80000))
         res.send(JSON.stringify(priceJSON))
     }
+})
+
+app.get("/fundamentals", async (req, res) => {
+    if(pricesUpdating){
+        await new Promise(resolve => setTimeout(resolve, 80000))
+    }
+    let ticker: string = req.query.ticker as string
+    const data = await getFundamentals(ticker)
+    res.send(JSON.stringify(data))
+})
+
+app.get("/get_price", async (req, res) =>{
+    res.send(priceJSON[req.query.ticker as string])
 })
 
 app.listen(port, '0.0.0.0', () => {
