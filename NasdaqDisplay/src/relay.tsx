@@ -12,24 +12,87 @@ const nasdaqStockTickers: string[] = ["MSFT", "AAPL", "NVDA", "AMZN", "AVGO", "M
 export async function getStocks(): Promise<Stock[]>{
   let results: Stock[] = []
   const port = 4266
-  let check = await fetch(`http://localhost:${port}/quotes`)
-  if(!check.ok){
-    throw new Error(`Status code: ${check.status}`)
-  }
   await fetch(`http://localhost:${port}/quotes`)
     .then(response => response.json())
     .then(data => {
-        console.log(data)
         for(let i = 0; i < nasdaqStockTickers.length; i++){
             const ticker: string = nasdaqStockTickers[i]
-            const companyName: string = retrieveCompanyName(ticker)
+            const companyName: string = retrieveCompanyInfo(ticker, true)
             const price: number = data[ticker]
-            console.log(price)
             const newStock: Stock = {symbol: ticker, recent_price: price, company_description: companyName}
             results.push(newStock)
         }
     })
   return results
+}
+
+export type StockFundamentals = {
+    name: string,
+    ticker: string,
+    cur_price: string,
+    sector: string,
+    yearToDatePriceReturnDaily: number,
+    priceRelativeToSP500Ytd: number,
+    psTTM: number,
+    ptbvQuarterly: number,
+    roaTTM: number,
+    roeTTM: number,
+    roiTTM: number,
+    revenueGrowth5Y: number,
+    revenueGrowthQuarterlyYoy: number,
+    revenuePerShare: number,
+    quickRatioQuarterly: number,
+    receivablesTurnoverTTM: number,
+    totalDebtTotalEquityQuarterly: number,
+    tangibleBookValuePerShareQuarterly: number
+}
+
+export async function getStockFundamentals(ticker: string): Promise<StockFundamentals>{
+    const port: number = 4266
+    const price = await fetch(`http://localhost:${port}/get_price?ticker=${ticker}`).then(response => response.text())
+    let result: StockFundamentals = {
+        name: "",
+        ticker: ticker,
+        cur_price: price,
+        sector: "",
+        yearToDatePriceReturnDaily: 0,
+        priceRelativeToSP500Ytd: 0,
+        psTTM: 0,
+        ptbvQuarterly: 0,
+        roaTTM: 0,
+        roeTTM: 0,
+        roiTTM: 0,
+        revenueGrowth5Y: 0,
+        revenueGrowthQuarterlyYoy: 0,
+        revenuePerShare: 0,
+        quickRatioQuarterly: 0,
+        receivablesTurnoverTTM: 0,
+        totalDebtTotalEquityQuarterly: 0,
+        tangibleBookValuePerShareQuarterly: 0
+    }
+    await fetch(`http://localhost:${port}/fundamentals?ticker=${ticker}`)
+        .then(response => response.json())
+        .then(data => {
+            result.name = retrieveCompanyInfo(ticker, true)
+            result.sector = retrieveCompanyInfo(ticker, false)
+            result.priceRelativeToSP500Ytd = data["priceRelativeToS&P500Ytd"]
+            result.psTTM = data["psTTM"]
+            result.yearToDatePriceReturnDaily = data["yearToDatePriceReturnDaily"]
+            result.ptbvQuarterly = data["ptbvQuarterly"]
+            result.roaTTM = data["roaTTM"]
+            result.roeTTM = data["roeTTM"]
+            result.roiTTM = data["roiTTM"]
+            result.revenueGrowth5Y = data["revenueGrowth5Y"]
+            result.revenueGrowthQuarterlyYoy = data["revenueGrowthQuarterlyYoy"]
+            result.revenuePerShare = data["revenuePerShareTTM"]
+            result.quickRatioQuarterly = data["quickRatioQuarterly"]
+            result.receivablesTurnoverTTM = data["receivablesTurnoverTTM"]
+            result.totalDebtTotalEquityQuarterly = data["totalDebt/totalEquityQuarterly"]
+            result.tangibleBookValuePerShareQuarterly = data["tangibleBookValuePerShareQuarterly"]
+            console.log(result)
+            return result
+        })
+    return result
 }
 
 export type Stock =  {
@@ -39,209 +102,608 @@ export type Stock =  {
 };
 
 
-function retrieveCompanyName(ticker: string): string{
-    switch(ticker){
+function retrieveCompanyInfo(ticker: string, isName: boolean): string {
+    switch (ticker) {
         case "MSFT":
-            return "Microsoft"
+            if (isName) {
+                return "Microsoft";
+            } else {
+                return "Technology";
+            }
         case "AAPL":
-            return "Apple"
+            if (isName) {
+                return "Apple";
+            } else {
+                return "Technology";
+            }
         case "NVDA":
-            return "Nvidia"
+            if (isName) {
+                return "Nvidia";
+            } else {
+                return "Technology";
+            }
         case "AMZN":
-            return "Amazon"
+            if (isName) {
+                return "Amazon";
+            } else {
+                return "Consumer Cyclical";
+            }
         case "AVGO":
-            return "Broadcom"
+            if (isName) {
+                return "Broadcom";
+            } else {
+                return "Technology";
+            }
         case "META":
-            return "Meta"
+            if (isName) {
+                return "Meta";
+            } else {
+                return "Communication Services";
+            }
         case "NFLX":
-            return "Netflix"
+            if (isName) {
+                return "Netflix";
+            } else {
+                return "Communication Services";
+            }
         case "TSLA":
-            return "Tesla"
+            if (isName) {
+                return "Tesla";
+            } else {
+                return "Consumer Cyclical";
+            }
         case "COST":
-            return "Costco"
+            if (isName) {
+                return "Costco";
+            } else {
+                return "Consumer Defensive";
+            }
         case "GOOG":
-            return "Google"
+            if (isName) {
+                return "Google";
+            } else {
+                return "Communication Services";
+            }
         case "TMUS":
-            return "T-Mobile US"
+            if (isName) {
+                return "T-Mobile US";
+            } else {
+                return "Communication Services";
+            }
         case "PLTR":
-            return "Palantir"
+            if (isName) {
+                return "Palantir";
+            } else {
+                return "Technology";
+            }
         case "CSCO":
-            return "Cisco"
+            if (isName) {
+                return "Cisco";
+            } else {
+                return "Technology";
+            }
         case "LIN":
-            return "Linde"
+            if (isName) {
+                return "Linde";
+            } else {
+                return "Basic Materials";
+            }
         case "ISRG":
-            return "Intuitive Surgical"
+            if (isName) {
+                return "Intuitive Surgical";
+            } else {
+                return "Healthcare";
+            }
         case "INTU":
-            return "Intuit"
+            if (isName) {
+                return "Intuit";
+            } else {
+                return "Technology";
+            }
         case "PEP":
-            return "PepsiCo"
+            if (isName) {
+                return "PepsiCo";
+            } else {
+                return "Consumer Defensive";
+            }
         case "AMD":
-            return "Advanced Micro Devices"
+            if (isName) {
+                return "Advanced Micro Devices";
+            } else {
+                return "Technology";
+            }
         case "ADBE":
-            return "Adobe"
+            if (isName) {
+                return "Adobe";
+            } else {
+                return "Technology";
+            }
         case "VRTX":
-            return "Vertex Pharmaceuticals"
+            if (isName) {
+                return "Vertex Pharmaceuticals";
+            } else {
+                return "Healthcare";
+            }
         case "TXN":
-            return "Texas Instruments"
+            if (isName) {
+                return "Texas Instruments";
+            } else {
+                return "Technology";
+            }
         case "BKNG":
-            return "Booking Holdings"
+            if (isName) {
+                return "Booking Holdings";
+            } else {
+                return "Consumer Cyclical";
+            }
         case "QCOM":
-            return "Qualcomm"
+            if (isName) {
+                return "Qualcomm";
+            } else {
+                return "Technology";
+            }
         case "AMGN":
-            return "Amgen"
+            if (isName) {
+                return "Amgen";
+            } else {
+                return "Healthcare";
+            }
         case "HON":
-            return "Honeywell"
+            if (isName) {
+                return "Honeywell";
+            } else {
+                return "Industrials";
+            }
         case "AMAT":
-            return "Applied Materials"
+            if (isName) {
+                return "Applied Materials";
+            } else {
+                return "Technology";
+            }
         case "CMCSA":
-            return "Comcast"
+            if (isName) {
+                return "Comcast";
+            } else {
+                return "Communication Services";
+            }
         case "GILD":
-            return "Gilead Science"
+            if (isName) {
+                return "Gilead Science";
+            } else {
+                return "Technology";
+            }
         case "PANW":
-            return "Palo Alto Networks"
+            if (isName) {
+                return "Palo Alto Networks";
+            } else {
+                return "Technology";
+            }
         case "MELI":
-            return "MercadoLibre"
+            if (isName) {
+                return "MercadoLibre";
+            } else {
+                return "Consumer Cyclical";
+            }
         case "ADP":
-            return "Automatic Data Processing"
+            if (isName) {
+                return "Automatic Data Processing";
+            } else {
+                return "Technology";
+            }
         case "ADI":
-            return "Analog Devices"
+            if (isName) {
+                return "Analog Devices";
+            } else {
+                return "Technology";
+            }
         case "APP":
-            return "Applovin"
+            if (isName) {
+                return "Applovin";
+            } else {
+                return "Communication Services";
+            }
         case "LRCX":
-            return "Lam Research"
+            if (isName) {
+                return "Lam Research";
+            } else {
+                return "Technology";
+            }
         case "MU":
-            return "Micron"
+            if (isName) {
+                return "Micron";
+            } else {
+                return "Technology";
+            }
         case "KLAC":
-            return "KLA Corporation"
+            if (isName) {
+                return "KLA Corporation";
+            } else {
+                return "Technology";
+            }
         case "CRWD":
-            return "CrowdStrike Holdings"
+            if (isName) {
+                return "CrowdStrike Holdings";
+            } else {
+                return "Technology";
+            }
         case "SBUX":
-            return "Starbucks"
+            if (isName) {
+                return "Starbucks";
+            } else {
+                return "Consumer Cyclical";
+            }
         case "MSTR":
-            return "MicroStrategy"
+            if (isName) {
+                return "MicroStrategy";
+            } else {
+                return "Technology";
+            }
         case "INTC":
-            return "Intel"
+            if (isName) {
+                return "Intel";
+            } else {
+                return "Technology";
+            }
         case "CEG":
-            return "Constellation Energy"
+            if (isName) {
+                return "Constellation Energy";
+            } else {
+                return "Utilities";
+            }
         case "CTAS":
-            return "Cintas"
+            if (isName) {
+                return "Cintas";
+            } else {
+                return "Industrials";
+            }
         case "CDNS":
-            return "Cadence Design Systems"
+            if (isName) {
+                return "Cadence Design Systems";
+            } else {
+                return "Technology";
+            }
         case "MDLZ":
-            return "Mondelez International"
+            if (isName) {
+                return "Mondelez International";
+            } else {
+                return "Consumer Defensive";
+            }
         case "FTNT":
-            return "Fortinet"
+            if (isName) {
+                return "Fortinet";
+            } else {
+                return "Technology";
+            }
         case "SNPS":
-            return "Synopsys"
-        case "PDD": 
-            return "PDD Holdings"
+            if (isName) {
+                return "Synopsys";
+            } else {
+                return "Technology";
+            }
+        case "PDD":
+            if (isName) {
+                return "PDD Holdings";
+            } else {
+                return "Consumer Cyclical";
+            }
         case "ORLY":
-            return "O'Reilly Automative"
+            if (isName) {
+                return "O'Reilly Automative";
+            } else {
+                return "Consumer Cyclical";
+            }
         case "DASH":
-            return "DoorDash"
+            if (isName) {
+                return "DoorDash";
+            } else {
+                return "Consumer Cyclical";
+            }
         case "MAR":
-            return "Marriott International"
+            if (isName) {
+                return "Marriott International";
+            } else {
+                return "Consumer Cyclical";
+            }
         case "PYPL":
-            return "PayPal"
+            if (isName) {
+                return "PayPal";
+            } else {
+                return "Financial";
+            }
         case "ASML":
-            return "ASML Holding"
+            if (isName) {
+                return "ASML Holding";
+            } else {
+                return "Technology";
+            }
         case "ADSK":
-            return "AutoDesk"
-        case"REGN":
-            return "Regeneron Pharmaceuticals"
+            if (isName) {
+                return "AutoDesk";
+            } else {
+                return "Technology";
+            }
+        case "REGN":
+            if (isName) {
+                return "Regeneron Pharmaceuticals";
+            } else {
+                return "Healthcare";
+            }
         case "ROP":
-            return "Roper Technologies"
+            if (isName) {
+                return "Roper Technologies";
+            } else {
+                return "Technology";
+            }
         case "CPRT":
-            return "Copart Inc"
+            if (isName) {
+                return "Copart Inc";
+            } else {
+                return "Industrials";
+            }
         case "MNST":
-            return "Monster Beverage"
+            if (isName) {
+                return "Monster Beverage";
+            } else {
+                return "Consumer Defensive";
+            }
         case "ABNB":
-            return "Airbnb"
+            if (isName) {
+                return "Airbnb";
+            } else {
+                return "Consumer Cyclical";
+            }
         case "CSX":
-            return "CSX Corporation"
+            if (isName) {
+                return "CSX Corporation";
+            } else {
+                return "Industrials";
+            }
         case "CHTR":
-            return "Charter Communcations"
+            if (isName) {
+                return "Charter Communications";
+            } else {
+                return "Communication Services";
+            }
         case "WDAY":
-            return "Workday"
+            if (isName) {
+                return "Workday";
+            } else {
+                return "Technology";
+            }
         case "MRVL":
-            return "Marvell Technology"
+            if (isName) {
+                return "Marvell Technology";
+            } else {
+                return "Technology";
+            }
         case "PAYX":
-            return "Paychex Inc."
+            if (isName) {
+                return "Paychex Inc.";
+            } else {
+                return "Technology";
+            }
         case "AEP":
-            return "American Electric Power"
+            if (isName) {
+                return "American Electric Power";
+            } else {
+                return "Utilities";
+            }
         case "AXON":
-            return "Axon Enterprise"
+            if (isName) {
+                return "Axon Enterprise";
+            } else {
+                return "Industrials";
+            }
         case "NXPI":
-            return "NXP Semiconductors"
+            if (isName) {
+                return "NXP Semiconductors";
+            } else {
+                return "Technology";
+            }
         case "PCAR":
-            return "PACCAR Inc"
+            if (isName) {
+                return "PACCAR Inc";
+            } else {
+                return "Industrials";
+            }
         case "ROST":
-            return "Ross Stores"
+            if (isName) {
+                return "Ross Stores";
+            } else {
+                return "Consumer Cyclical";
+            }
         case "FAST":
-            return "Fastenal"
+            if (isName) {
+                return "Fastenal";
+            } else {
+                return "Industrials";
+            }
         case "KDP":
-            return "Keurig Dr. Pepper"
+            if (isName) {
+                return "Keurig Dr. Pepper";
+            } else {
+                return "Consumer Defensive";
+            }
         case "EXC":
-            return "Exelon"
+            if (isName) {
+                return "Exelon";
+            } else {
+                return "Utilities";
+            }
         case "VRSK":
-            return "Verisk Analytics"
+            if (isName) {
+                return "Verisk Analytics";
+            } else {
+                return "Industrials";
+            }
         case "IDXX":
-            return "IDEXX Laboratories"
+            if (isName) {
+                return "IDEXX Laboratories";
+            } else {
+                return "Healthcare";
+            }
         case "FANG":
-            return "Diamondback Energy"
+            if (isName) {
+                return "Diamondback Energy";
+            } else {
+                return "Energy";
+            }
         case "CTSH":
-            return "Cognizant Technologies"
+            if (isName) {
+                return "Cognizant Technologies";
+            } else {
+                return "Technology";
+            }
         case "CCEP":
-            return "Coca-Cola Europacific Partners"
+            if (isName) {
+                return "Coca-Cola Europacific Partners";
+            } else {
+                return "Consumer Defensive";
+            }
         case "AZN":
-            return "AstraZeneca"
+            if (isName) {
+                return "AstraZeneca";
+            } else {
+                return "Technology";
+            }
         case "TTWO":
-            return "Take Two Interactive Solutions"
+            if (isName) {
+                return "Take Two Interactive Solutions";
+            } else {
+                return "Communication Services";
+            }
         case "EA":
-            return "Electronic Arts"
+            if (isName) {
+                return "Electronic Arts";
+            } else {
+                return "Communication Services";
+            }
         case "XEL":
-            return "Xcel Energy"
+            if (isName) {
+                return "Xcel Energy";
+            } else {
+                return "Utilities";
+            }
         case "ODFL":
-            return "Old Dominion Freight Line"
+            if (isName) {
+                return "Old Dominion Freight Line";
+            } else {
+                return "Industrials";
+            }
         case "BKR":
-            return "Baker Hughes"
+            if (isName) {
+                return "Baker Hughes";
+            } else {
+                return "Energy";
+            }
         case "ZS":
-            return "Zscalar"
+            if (isName) {
+                return "Zscalar";
+            } else {
+                return "Technology";
+            }
         case "TEAM":
-            return "Atlassian"
+            if (isName) {
+                return "Atlassian";
+            } else {
+                return "Technology";
+            }
         case "DDOG":
-            return "Datadog"
+            if (isName) {
+                return "Datadog";
+            } else {
+                return "Technology";
+            }
         case "TTD":
-            return "The Trade Desk"
+            if (isName) {
+                return "The Trade Desk";
+            } else {
+                return "Communication Services";
+            }
         case "LULU":
-            return "Luluemon Atheletica"
+            if (isName) {
+                return "Luluemon Atheletica";
+            } else {
+                return "Consumer Cyclical";
+            }
         case "GEHC":
-            return "GE HealthCare Technologies"
+            if (isName) {
+                return "GE HealthCare Technologies";
+            } else {
+                return "Healthcare";
+            }
         case "KHC":
-            return "Kraft Heinz"
+            if (isName) {
+                return "Kraft Heinz";
+            } else {
+                return "Consumer Defensive";
+            }
         case "DXCM":
-            return "DexCom"
+            if (isName) {
+                return "DexCom";
+            } else {
+                return "Healthcare";
+            }
         case "MCHP":
-            return "Microchip Technologies"
+            if (isName) {
+                return "Microchip Technologies";
+            } else {
+                return "Technology";
+            }
         case "CSGP":
-            return "CoStar"
+            if (isName) {
+                return "CoStar";
+            } else {
+                return "Real Estate";
+            }
         case "ANSS":
-            return "Ansys"
+            if (isName) {
+                return "Ansys";
+            } else {
+                return "Technology";
+            }
         case "CDW":
-            return "CDW"
+            if (isName) {
+                return "CDW";
+            } else {
+                return "Technology";
+            }
         case "WBD":
-            return "Warner Brothers"
+            if (isName) {
+                return "Warner Brothers";
+            } else {
+                return "Communication Services";
+            }
         case "GFS":
-            return "GlobalFoundries"
+            if (isName) {
+                return "GlobalFoundries";
+            } else {
+                return "Technology";
+            }
         case "ON":
-            return "ON Semiconductor"
+            if (isName) {
+                return "ON Semiconductor";
+            } else {
+                return "Technology";
+            }
         case "BIIB":
-            return "Biogen"
+            if (isName) {
+                return "Biogen";
+            } else {
+                return "Technology";
+            }
         case "ARM":
-            return "Arm Holdings"
+            if (isName) {
+                return "Arm Holdings";
+            } else {
+                return "Technology";
+            }
         case "MDB":
-            return "MongoDB"
+            if (isName) {
+                return "MongoDB";
+            } else {
+                return "Technology";
+            }
     }
-    return "Invalid Ticker"
+    return "Invalid Ticker";
 }
-
